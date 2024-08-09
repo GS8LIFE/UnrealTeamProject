@@ -10,9 +10,7 @@
 #include "Perception/AISenseConfig_Sight.h"
 #include "GenericTeamAgentInterface.h"
 
-
-
-#include "TestLevel/Character/TestCharacter.h"
+#include "PartDevLevel/Character/ParentsCharacter.h"
 #include "TestLevel/Character/TestPlayerState.h"
 
 ABasicMonsterAIController::ABasicMonsterAIController()
@@ -41,7 +39,7 @@ void ABasicMonsterAIController::PlayerDetect(AActor* Other, FAIStimulus const St
 		return;
 	}
 
-	ATestCharacter* TargetPlayer = Cast<ATestCharacter>(Other);
+	AParentsCharacter* TargetPlayer = Cast<AParentsCharacter>(Other);
 	if (nullptr == TargetPlayer)
 	{
 		return;
@@ -60,31 +58,6 @@ void ABasicMonsterAIController::PlayerDetect(AActor* Other, FAIStimulus const St
 	}
 
 	GetBlackboardComponent()->SetValueAsObject(TEXT("TargetActor"), TargetPlayer);
-
-	//if (false == Stimulus.WasSuccessfullySensed())
-	//{
-	//	return;
-	//}
-	//
-	//AMainCharacter* TargetPlayer = Cast<AMainCharacter>(Other);
-	//if (nullptr == TargetPlayer)
-	//{
-	//	return;
-	//}
-	//
-	//AMainPlayerState* TargetPlayerState = Cast<AMainPlayerState>(TargetPlayer->GetPlayerState());
-	//if (0.0f >= TargetPlayerState->GetPlayerHp())
-	//{
-	//	return;
-	//}
-	//
-	//UObject* PrevTarget = GetBlackboardComponent()->GetValueAsObject(TEXT("TargetActor"));
-	//if (nullptr != PrevTarget)
-	//{
-	//	return;
-	//}
-	//
-	//GetBlackboardComponent()->SetValueAsObject(TEXT("TargetActor"), TargetPlayer);
 }
 
 ETeamAttitude::Type ABasicMonsterAIController::GetTeamAttitudeTowards(const AActor& Other) const

@@ -43,6 +43,14 @@ public:
 	const struct FMonsterDataRow* GetMonsterData(FName _Name);
 
 	/// <summary>
+	/// BossMonsterDataTable 포인터를 받아오는 함수
+	/// FName은 생성한 BossMonsterDataTable 행이름
+	/// </summary>
+	/// <param name="_Name"></param>
+	/// <returns></returns>
+	const struct FBossMonsterDataRow* GetBossMonsterData(FName _Name);
+
+	/// <summary>
 	/// ItemDataTable 포인터를 받아오는 함수
 	/// FName은 생성한 ItemDataTable 행 이름
 	/// </summary>
@@ -65,14 +73,6 @@ public:
 	/// FName은 생성한 LobbyUserWidgetDataTable 행 이름
 	/// </summary>
 	const struct FWidgetDataRow* GetLobbyUserWidgetDataTable(FName _Name);
-
-	/// <summary>
-	/// BossDataTable 포인터를 받아오는 함수
-	/// FName은 생성한 BossDataTable 행 이름
-	/// </summary>
-	/// <param name="_Name"></param>
-	/// <returns></returns>
-	const struct FBossDataRow* GetBossDataTable(FName _Name);
 
 	/// <summary>
 	/// GlobalObjectTable 포인터를 받아오는 함수
@@ -143,7 +143,7 @@ public:
 		return UIToSelectCharacter;
 	}
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	FORCEINLINE FString GetMainNickName() const
 	{
 		return MainNickname;
@@ -174,6 +174,9 @@ private:
 	UDataTable* MonsterDataTable = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowprivateAccess = "true"))
+	UDataTable* BossMonsterDataTable = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowprivateAccess = "true"))
 	UDataTable* ItemDataTable = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowprivateAccess = "true"))
@@ -184,9 +187,6 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowprivateAccess = "true"))
 	UDataTable* LobbyUserWidgetDataTable = nullptr;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowprivateAccess = "true"))
-	UDataTable* BossDataTable = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowprivateAccess = "true"))
 	UDataTable* GlobalObjectTable = nullptr;
@@ -217,3 +217,4 @@ private:
 	UPROPERTY()
 	FString MainNickname = "MyNickName";
 };
+

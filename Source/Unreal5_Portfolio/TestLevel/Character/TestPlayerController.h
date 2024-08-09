@@ -8,7 +8,9 @@
 #include "GenericTeamAgentInterface.h"
 #include "TestPlayerController.generated.h"
 
-DECLARE_DELEGATE(FDelegate_GetItem_Test);
+DECLARE_DELEGATE(FDelegate_Reload);
+DECLARE_DELEGATE(FDelegate_GetItem);
+DECLARE_DELEGATE_OneParam(FDelegate_Faint, const bool);
 
 /**
  *
@@ -20,126 +22,113 @@ class UNREAL5_PORTFOLIO_API ATestPlayerController : public APlayerController, pu
 
 public:
 	ATestPlayerController();
-
-	FDelegate_GetItem_Test FGetItemToWidget_Test;
-
-protected :
+protected:
 	void BeginPlay() override;
 
-public :
-	// Input
-	UPROPERTY()
-	class UInputDatas* InputData;
+public:
+	FDelegate_Reload FCharacterToReload;
+	FDelegate_Faint FCharacterToFaint;
+	FDelegate_GetItem FGetItemToWidget;
+
+
 	UFUNCTION(BlueprintCallable)
 	void SetupInputComponent() override;
 
-	UFUNCTION()
-	void PlayerTick(float DeltaTime) override;
-
-	// Actions
+	// Input Actions
 	UFUNCTION(BlueprintCallable)
 	void MouseRotation(const FInputActionValue& Value);
 	UFUNCTION(BlueprintCallable)
-	void MoveFront(const FInputActionValue& Value);
+	void W_MoveFront(const FInputActionValue& Value);
 	UFUNCTION(BlueprintCallable)
-	void MoveBack(const FInputActionValue& Value);
+	void S_MoveBack(const FInputActionValue& Value);
 	UFUNCTION(BlueprintCallable)
-	void MoveRight(const FInputActionValue& Value);
+	void D_MoveRight(const FInputActionValue& Value);
 	UFUNCTION(BlueprintCallable)
-	void MoveLeft(const FInputActionValue& Value);
+	void A_MoveLeft(const FInputActionValue& Value);
+	UFUNCTION(BlueprintCallable)
+	void MouseLeft_FireStart();
+	UFUNCTION(BlueprintCallable)
+	void MouseLeft_FireTick(float _DeltaTime);
+	UFUNCTION(BlueprintCallable)
+	void MouseLeft_FireEnd();
+	UFUNCTION(BlueprintCallable)
+	void E_CheckItem();
+	UFUNCTION(BlueprintCallable)
+	void P_ChangePOVController();
+	UFUNCTION(BlueprintCallable)
+	void LCtrl_Crouch(const FInputActionValue& Value);
+	UFUNCTION(BlueprintCallable)
+	void R_Reload();
 
-	//UFUNCTION(BlueprintCallable)
-	//void Jump(const FInputActionValue& Value);
-	//UFUNCTION(BlueprintCallable)
-	//void JumpEnd(const FInputActionValue& Value);
+	// Number Key
+	UFUNCTION(BlueprintCallable)
+	void Num_ChangePosture(int _InputKey);
+	UFUNCTION(BlueprintCallable)
+	void Num_Drink();
+	UFUNCTION(BlueprintCallable)
+	void Num_BombSetStart();
+	UFUNCTION(BlueprintCallable)
+	void Num_BombSetTick();
+	UFUNCTION(BlueprintCallable)
+	void Num_BombSetEnd();
 
-	// 사용 중 (태환)
-	UFUNCTION(BlueprintCallable)
-	void Crouch(const FInputActionValue& Value);
-
-	// Fire
-	UFUNCTION(BlueprintCallable)
-	void FireStart(float _DeltaTime);
-	UFUNCTION(BlueprintCallable)
-	void FireTick(float _DeltaTime);
-	UFUNCTION(BlueprintCallable)
-	void FireEnd();
-
-	// Drink
-	UFUNCTION(BlueprintCallable)
-	void Drink_Con();	// => 메인에 추후 이전해야 함 (24.07.30 함수 이름 수정, 테스팅 중) => 메인 적용(주석)
-
-	// Bomb Setting
-	UFUNCTION(BlueprintCallable)
-	void BombSetStart_Con();	// => 메인에 추후 이전해야 함 (24.07.30 함수 이름 수정, 테스팅 중) => 메인 적용(주석)
-	UFUNCTION(BlueprintCallable)
-	void BombSetTick_Con();		// => 메인에 추후 이전해야 함 (24.07.31 추가됨, 테스팅 중)
-	UFUNCTION(BlueprintCallable)
-	void BombSetCancel_Con();	// => 메인에 추후 이전해야 함 (24.07.30 함수 이름 수정, 테스팅 중) => 메인 적용(주석)
-
-	// Item
-	UFUNCTION(BlueprintCallable)
-	void CheckItem_Con();	// => 메인 수정 필요 (24.07.30 플레이어 함수와의 혼동을 방지하지 위해 이름 수정됨) (PickUpItem 함수 대체) => 메인 적용
-
-	// Posture
-	UFUNCTION(BlueprintCallable)
-	void ChangePosture_Con(EPlayerPosture _Posture);	// => 메인 수정 필요 (24.07.30 플레이어 함수와의 혼동을 방지하지 위해 이름 수정됨) => 메인 적용
-
-	// POV
-	UFUNCTION(BlueprintCallable)
-	void ChangePOV_Con();	// => 메인 수정 필요 (24.07.30 플레이어 함수와의 혼동을 방지하지 위해 이름 수정됨) => 메인 적용
-
-	// Reload (k)
-	UFUNCTION(BlueprintCallable)
-	void IAReload();
-
-	// LowerStateChange 함수 (태환) => 메인 적용
+	// 하체
 	UFUNCTION(BlueprintCallable)
 	void ChangeLowerState(EPlayerLowerState _State);
 
-	// PlayerDirChange 함수 (태환) => 메인 적용
+	// 플레이어 방향
 	UFUNCTION(BlueprintCallable)
 	void ChangePlayerDir(EPlayerMoveDir _Dir);
 
-	// 공격 몽타주 변경 함수  => 메인 적용
-	UFUNCTION(BlueprintCallable)
-	void PlayerMontagePlay();
-
-	// 공격 종료 몽타주 변경 함수  => 메인 적용
-	UFUNCTION(BlueprintCallable)
-	void FireEndMontagePlay();
-
-	//테스트용
-	UFUNCTION(BlueprintCallable)
-	void SetFaint();
+	// Generic Team Id
+	virtual FGenericTeamId GetGenericTeamId() const override;
 
 private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "TeamId", meta = (AllowPrivateAccess = true))
-	FGenericTeamId TeamId; // => 메인 적용
-	virtual FGenericTeamId GetGenericTeamId() const override; // => 메인 적용
+	// Input
+	UPROPERTY()
+	class UInputDatas* InputData = nullptr;
 
-	FTimerHandle MyTimeHandle; // => 메인 적용
-	int Count = 0;
+	// Fire 여부
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	bool IsGunFire = false;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	bool PlayerIsFaint = false; // => 메인 적용(Delegate)
+	// Camera Shake
+	UPROPERTY()
+	ECameraShakeState ShakeState = ECameraShakeState::Stop;
+	UPROPERTY()
+	FVector ShakeValue = FVector(0.0f, 0.0f, 0.0f);
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	bool PlayerIsBombSetting = false; // 메인 적용 필요
-
-	// HUD / Widget
 	UFUNCTION()
-	void CallGetItem(); // => 메인 적용(Delegate)
+	void ResetCameraShakeValue();
+	UFUNCTION()
+	void ChangeCameraShakeState(ECameraShakeState _ShakeState);
+	UFUNCTION(BlueprintCallable)
+	void CameraShakeTick(float _DeltaTime);
 
-	/*UPROPERTY()
-	FRandomStream Stream;*/
+	// Monster 요청
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "TeamId", meta = (AllowPrivateAccess = true))
+	FGenericTeamId TeamId;
 
-protected: // => 메인 적용(Delegate)
+	// 기절 상태.
+	UPROPERTY()
+	bool CharacterIsFaint = false;
+
+	UFUNCTION()
+	void CallReload();
+
+	UFUNCTION()
+	void CallFaint(bool _Faint);
+
+	UFUNCTION()
+	void CallGetItem();
+
+protected:
+	// Bullet Count To HUD [BP]
 	UFUNCTION(BlueprintImplementableEvent, meta = (CallInEditor = true))
-	void ChangePostureToWidget(EPlayerPosture _Posture);
+	void BullitCountToHUD();
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (CallInEditor = true))
-	void GetItemToWidget();
+	void ChangePostureToWidget(EPlayerUpperState _Posture);
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (CallInEditor = true))
 	void CallGetItemToWidget();

@@ -2,8 +2,9 @@
 
 
 #include "MainGameLevel/Monster/BasicMonster/ClimbZombie/AI/BTTaskNode_ClimbZombieClimb.h"
-#include "MainGameLevel/Monster/BasicMonster/ClimbZombie/ClimbZombie.h"
 #include "MainGameLevel/Monster/BasicMonster/AI/BasicMonsterAIController.h"
+#include "MainGameLevel/Monster/BasicMonster/ClimbZombie/ClimbZombeData.h"
+#include "MainGameLevel/Monster/BasicMonster/ClimbZombie/ClimbZombie.h"
 
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -35,7 +36,6 @@ void UBTTaskNode_ClimbZombieClimb::TickTask(UBehaviorTreeComponent& OwnerComp, u
 	FVector DestPos = GetValueAsVector(OwnerComp, TEXT("Destination"));
 	FVector CurPos = ClimbZombie->GetActorLocation();
 
-	//if (CurPos.Z >= Dest.Z - (ClimbZombie->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight() * 1.5f))
 	if (CurPos.Z >= DestPos.Z)
 	{
 		StateChange(OwnerComp, EBasicMonsterState::ClimbEnd);

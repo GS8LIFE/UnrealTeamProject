@@ -3,6 +3,15 @@
 
 #include "PartDevLevel/Character/ParentsCharacter.h"
 
+#include "GameFramework/SpringArmComponent.h"
+#include "Camera/CameraComponent.h"
+#include "Components/BoxComponent.h"
+#include "Components/SphereComponent.h"
+
+#include "TestLevel/UI/TestMinimapIconComponent.h"
+#include "MainGameLevel/UI/InGame/HeadNameWidgetComponent.h"
+
+
 // Sets default values
 AParentsCharacter::AParentsCharacter()
 {
@@ -32,9 +41,16 @@ void AParentsCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 }
 
-
-
 void AParentsCharacter::AnimationEnd()
 {
+}
 
+void AParentsCharacter::AnimationEnd(FString _CurMontage)
+{
+
+}
+
+void AParentsCharacter::ChangeHandAttackCollisionProfile(FName _Name)
+{
+	HandAttackComponent->SetCollisionProfileName(_Name);
 }

@@ -130,13 +130,20 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	bool PlayerIsBombSetting = false; // 메인 적용 필요
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	bool IsGunFire = false;
+
+	// Camera(Controller) Shake
+	UPROPERTY()
+	FRandomStream Stream;
+
 	// HUD / Widget
 	UFUNCTION()
 	void CallGetItem(); // => 메인 적용(Delegate)
 
 protected: // => 메인 적용(Delegate)
-	UFUNCTION(BlueprintImplementableEvent, meta = (CallInEditor = true))
-	void ChangePostureToWidget(EPlayerPosture _Posture);
+	//UFUNCTION(BlueprintImplementableEvent, meta = (CallInEditor = true))
+	//void ChangePostureToWidget(EPlayerPosture _Posture);
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (CallInEditor = true))
 	void GetItemToWidget();

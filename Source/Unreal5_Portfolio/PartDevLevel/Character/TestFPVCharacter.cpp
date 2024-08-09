@@ -10,7 +10,6 @@
 #include "TimerManager.h"
 #include "Global/MainGameBlueprintFunctionLibrary.h"
 #include "Global/DataTable/ItemDataRow.h"
-#include "PartDevLevel/Monster/Base/TestMonsterBase.h"
 #include "PartDevLevel/Character/TestFPVPlayerController.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
@@ -21,8 +20,6 @@
 #include "Components/BoxComponent.h"
 #include "Components/SphereComponent.h"
 
-#include "PartDevLevel/Monster/Boss/TestBossMonsterBase.h"
-#include "PartDevLevel/Monster/Kraken/KrakenProjectile.h"
 #include "PartDevLevel/Character/PlayerAnimInstance.h"
 
 #include "TestLevel/Character/TestPlayerState.h"
@@ -41,12 +38,11 @@ ATestFPVCharacter::ATestFPVCharacter()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	// Character Mesh => 메인캐릭터 이전 필요 (24.07.29 수정됨) => 메인 적용.
 	GetMesh()->SetOwnerNoSee(true);
 	GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, -88.0f));
 	GetMesh()->bHiddenInSceneCapture = true;
 
-	// Item Mesh			// => 메인캐릭터 적용.
+	// Item Mesh
 	ItemSocketMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ItemSocketMesh"));
 	ItemSocketMesh->SetupAttachment(GetMesh(), FName("ItemSocket"));
 	ItemSocketMesh->SetCollisionProfileName(TEXT("NoCollision"));
@@ -56,7 +52,7 @@ ATestFPVCharacter::ATestFPVCharacter()
 	ItemSocketMesh->SetIsReplicated(true);
 	ItemSocketMesh->bHiddenInSceneCapture = true;
 
-	// SpringArm Component	// => 메인캐릭터 이전 필요 (24.07.29 수정됨)
+	// SpringArm Component
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComponent"));
 	SpringArmComponent->SetupAttachment(RootComponent);
 	SpringArmComponent->SetRelativeLocation(FPVCameraRelLoc);
@@ -64,12 +60,12 @@ ATestFPVCharacter::ATestFPVCharacter()
 	SpringArmComponent->bUsePawnControlRotation = true;
 	SpringArmComponent->bDoCollisionTest = true;
 
-	// Camera Component		// => 메인캐릭터 이전 필요 (24.07.29 수정됨)
+	// Camera Component
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
 	CameraComponent->SetupAttachment(SpringArmComponent);
 	CameraComponent->SetProjectionMode(ECameraProjectionMode::Perspective);
 
-	// FPV Character Mesh	// => 메인 수정 필요 (24.08.02 수정됨)
+	// FPV Character Mesh
 	FPVMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FirstPersonMesh"));
 	FPVMesh->SetupAttachment(CameraComponent);
 	FPVMesh->SetRelativeLocation(FVector(-10.0f, 0.0f, -160.0f));
@@ -78,7 +74,7 @@ ATestFPVCharacter::ATestFPVCharacter()
 	FPVMesh->bCastDynamicShadow = false;
 	FPVMesh->CastShadow = false;
 
-	// FPV Item Mesh		// => 메인캐릭터 적용.
+	// FPV Item Mesh
 	FPVItemSocketMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("FPVItemSocketMesh"));
 	FPVItemSocketMesh->SetupAttachment(FPVMesh, FName("FPVItemSocket"));
 	FPVItemSocketMesh->SetCollisionProfileName(TEXT("NoCollision"));
@@ -89,80 +85,55 @@ ATestFPVCharacter::ATestFPVCharacter()
 	FPVItemSocketMesh->bCastDynamicShadow = false;
 	FPVItemSocketMesh->CastShadow = false;
 
-	// Map Item 검사			// => 메인 수정 필요 (24.08.01 수정됨)
+	// Map Item 검사	
 	GetMapItemCollisionComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("GetMapItemCollisionComponent"));
 	GetMapItemCollisionComponent->SetupAttachment(RootComponent);
 	GetMapItemCollisionComponent->SetRelativeLocation(FVector(60.0, 0.0, -5.0f));
 	GetMapItemCollisionComponent->SetBoxExtent(FVector(60.0f, 30.0f, 100.0f));
 	GetMapItemCollisionComponent->SetCollisionProfileName(FName("MapItemSearch"));
 
-	// Inventory			// => 메인 수정 필요 (24.08.06 수정됨)
-	for (size_t i = 0; i < 4; i++)
-	{
-		FFPVItemInformation NewSlot;
-		ItemSlot.Push(NewSlot);
-	}
-
-	// HandAttack Component => 메인캐릭터 적용.[주석이 없는 3줄 적용. 확인 필요.]
-	//FString Name = "Punch";
+	// Hand Attack Component
 	HandAttackComponent = CreateDefaultSubobject<USphereComponent>(TEXT("Hand Attack Comp"));
 	HandAttackComponent->SetupAttachment(GetMesh());
 	HandAttackComponent->SetRelativeLocation({ 0.0f, 100.0f, 120.0f });
-	HandAttackComponent->SetCollisionProfileName(TEXT("NoCollision"));	// => 메인 수정 필요 (24.08.01 BeginPlay 함수에서 여기로 이동)
+	HandAttackComponent->SetCollisionProfileName(TEXT("NoCollision"));
 
-	// MinimapIcon Component => 메인캐릭터 적용.
+	// MiniMap Icon Component
 	MinimapIconComponent = CreateDefaultSubobject<UTestMinimapIconComponent>(TEXT("MinimapPlayerIcon"));
 	MinimapIconComponent->SetupAttachment(RootComponent);
 	MinimapIconComponent->bVisibleInSceneCaptureOnly = true;
 
-	// HeadName Component	// => 메인으로 이전 필요 (24.07.30 추가됨)
+	// HeadName Component
 	HeadNameComponent = CreateDefaultSubobject<UHeadNameWidgetComponent>(TEXT("HeadNameWidgetComponent"));
 	HeadNameComponent->SetupAttachment(RootComponent);
 	HeadNameComponent->SetOwnerNoSee(true);
 	HeadNameComponent->bHiddenInSceneCapture = true;
 
-	// Riding Character Mesh => 메인캐릭터 적용.(주석)
-	RidingMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RidingMesh"));
-	RidingMesh->SetupAttachment(GetMesh());
-	RidingMesh->SetCollisionProfileName(TEXT("NoCollision"));
-	RidingMesh->SetVisibility(false);
-	RidingMesh->SetIsReplicated(true);
-	RidingMesh->bHiddenInSceneCapture = true;
+	// Inventory			// => 메인 수정 필요 (24.08.06 수정됨) [자식]
+	for (size_t i = 0; i < 4; i++)
+	{
+		FFPVItemInformation NewSlot;
+		ItemSlot.Push(NewSlot);
+	}
 }
 
 void ATestFPVCharacter::HandAttackCollision(AActor* _OtherActor, UPrimitiveComponent* _Collision) // => 매인 캐릭터에 적용.
 {
 	{
-		ATestMonsterBase* Monster = Cast<ATestMonsterBase>(_OtherActor);
-		if (nullptr != Monster)
-		{
-			Monster->Damaged(150.0f);
-		}
+		//ATestMonsterBase* Monster = Cast<ATestMonsterBase>(_OtherActor);
+		//if (nullptr != Monster)
+		//{
+		//	Monster->Damaged(150.0f);
+		//}
 	}
 
 	{
-		ATestBossMonsterBase* BossMonster = Cast<ATestBossMonsterBase>(_OtherActor);
-		if (nullptr != BossMonster)
-		{
-			BossMonster->Damaged(150.0f);
-		}
+		//ATestBossMonsterBase* BossMonster = Cast<ATestBossMonsterBase>(_OtherActor);
+		//if (nullptr != BossMonster)
+		//{
+		//	BossMonster->Damaged(150.0f);
+		//}
 	}
-
-
-	// Kraken의 바위 부시는 함수 호출 (메인 추가 필요)
-	{
-		AKrakenProjectile* Rock = Cast<AKrakenProjectile>(_OtherActor);
-		if (nullptr != Rock)
-		{
-			Rock->Damaged(150.0f);
-		}
-	}
-}
-
-// 노티파이 호출 함수.
-void ATestFPVCharacter::ChangeHandAttackCollisionProfile(FName _Name) // => 매인 적용.
-{
-	HandAttackComponent->SetCollisionProfileName(_Name);
 }
 
 // 메인 플레이어 추가 필요 코드 (태환) 07/24 => 매인 적용.
@@ -198,7 +169,11 @@ void ATestFPVCharacter::PostInitializeComponents()
 
 void ATestFPVCharacter::AnimationEnd() 
 {
-	ChangeMontage(IdleDefault);
+	PlayerAnimInst->ChangeAnimation(IdleDefault);
+	FPVPlayerAnimInst->ChangeAnimation(IdleDefault);
+
+	// 동기화 이슈 발생.
+	// ChangeMontage(IdleDefault);
 }
 
 // Called when the game starts or when spawned
@@ -303,10 +278,9 @@ void ATestFPVCharacter::Tick(float DeltaTime)
 	// Debugging
 	//DefaultRayCast(DeltaTime);
 	//float ts = GetWorld()->GetDeltaSeconds();
-	AGameModeBase* Ptr = GetWorld()->GetAuthGameMode();
-	TArray<FFPVItemInformation> I = ItemSlot;
-	int c = CurItemIndex;
-	int a = 0;
+	//TArray<FFPVItemInformation> I = ItemSlot;
+	//int c = CurItemIndex;
+	//AGameModeBase* Ptr = GetWorld()->GetAuthGameMode();
 }
 
 void ATestFPVCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -318,10 +292,11 @@ void ATestFPVCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME(ATestFPVCharacter, DirValue);			// => 매인 적용.
 	DOREPLIFETIME(ATestFPVCharacter, IsFaint);			// 7/26 추가
 	DOREPLIFETIME(ATestFPVCharacter, IsBombSetting);	// => 메인에 이전 필요 (24.07.29 추가됨)
+	DOREPLIFETIME(ATestFPVCharacter, IdleDefault);
 
 	// Inventory
-	//DOREPLIFETIME(ATestFPVCharacter, ItemSlot);		// => 메인 삭제 필요 (24.08.06 추가됨)
-	//DOREPLIFETIME(ATestFPVCharacter, IsItemIn);		// => 메인 삭제 필요 (24.08.06 추가됨)
+	//DOREPLIFETIME(ATestFPVCharacter, ItemSlot);		// => 메인 삭제 필요 (24.08.06 삭제됨)
+	//DOREPLIFETIME(ATestFPVCharacter, IsItemIn);		// => 메인 삭제 필요 (24.08.06 삭제됨)
 
 	// Item
 	//DOREPLIFETIME(ATestFPVCharacter, RayCastToItemName); // 사용 안함.
@@ -365,20 +340,20 @@ void ATestFPVCharacter::FireRayCast_Implementation() // => 메인 수정 필요 (24.07
 			FString BoneName = Hit.BoneName.ToString();
 			UE_LOG(LogTemp, Warning, TEXT("Bone Name : %s"), *BoneName);
 			{
-				ATestMonsterBase* Monster = Cast<ATestMonsterBase>(Hit.GetActor()); // [Main] ABasicMonsterBase
-				if (nullptr != Monster)
-				{
-					Monster->Damaged(ItemSlot[CurItemIndex].Damage);
-					GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("%s got damage : %d"), *Monster->GetName(), ItemSlot[CurItemIndex].Damage));
-				}
+				//ATestMonsterBase* Monster = Cast<ATestMonsterBase>(Hit.GetActor()); // [Main] ABasicMonsterBase
+				//if (nullptr != Monster)
+				//{
+				//	Monster->Damaged(ItemSlot[CurItemIndex].Damage);
+				//	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("%s got damage : %d"), *Monster->GetName(), ItemSlot[CurItemIndex].Damage));
+				//}
 			}
 			{
-				ATestBossMonsterBase* BossMonster = Cast<ATestBossMonsterBase>(Hit.GetActor());
-				if (nullptr != BossMonster)
-				{
-					BossMonster->Damaged(ItemSlot[CurItemIndex].Damage);
-					GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("%s got damage : %d"), *BossMonster->GetName(), ItemSlot[CurItemIndex].Damage));
-				}
+				//ATestBossMonsterBase* BossMonster = Cast<ATestBossMonsterBase>(Hit.GetActor());
+				//if (nullptr != BossMonster)
+				//{
+				//	BossMonster->Damaged(ItemSlot[CurItemIndex].Damage);
+				//	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("%s got damage : %d"), *BossMonster->GetName(), ItemSlot[CurItemIndex].Damage));
+				//}
 			}
 		}
 	}
@@ -419,7 +394,13 @@ void ATestFPVCharacter::Drink()
 // 노티파이
 void ATestFPVCharacter::DrinkComplete_Implementation()			// => 메인에 이전 필요 (24.08.01 수정됨)
 {
+
 	ChangeMontage(IdleDefault);
+}
+
+void ATestFPVCharacter::ChangeHandAttackCollisionProfile(FName _Name)
+{
+	HandAttackComponent->SetCollisionProfileName(_Name);
 }
 
 void ATestFPVCharacter::BombSetStart_Implementation()			// => 메인 수정 필요 (24.08.06 인벤토리에 있는지 검사하는 부분 수정됨)
@@ -451,7 +432,6 @@ void ATestFPVCharacter::BombSetStart_Implementation()			// => 메인 수정 필요 (24
 #endif
 
 	// 애니메이션 변경
-	//ChangePosture(EPlayerPosture::Bomb);
 	ChangeMontage(EPlayerUpperState::Bomb);
 }
 
@@ -495,7 +475,6 @@ void ATestFPVCharacter::BombSetCancel_Implementation()		// => 메인에 이전 필요 (
 		}
 
 		// 이전 자세로 애니메이션 변경
-		//ChangePosture(PrevPostureValue);
 		ChangeMontage(IdleDefault);
 	}
 }
@@ -522,8 +501,13 @@ void ATestFPVCharacter::BombSetComplete_Implementation()	// => 메인 수정 필요 (2
 	ChangeMontage(IdleDefault);
 }
 
-void ATestFPVCharacter::ChangeMontage_Implementation(EPlayerUpperState _UpperState)
+void ATestFPVCharacter::ChangeMontage_Implementation(EPlayerUpperState _UpperState, bool IsSet)
 {
+	if (true == IsSet)
+	{
+		IdleDefault = _UpperState;
+	}
+
 	PlayerAnimInst->ChangeAnimation(_UpperState);
 	FPVPlayerAnimInst->ChangeAnimation(_UpperState);
 	ClientChangeMontage(_UpperState);
@@ -535,61 +519,48 @@ void ATestFPVCharacter::ClientChangeMontage_Implementation(EPlayerUpperState _Up
 	FPVPlayerAnimInst->ChangeAnimation(_UpperState);
 }
 
-void ATestFPVCharacter::SetStaticMesh_Implementation(FName _ItemName)
+void ATestFPVCharacter::SettingItemSocket(int _InputKey)		// => 메인에 이전 필요 (24.08.06 추가됨)
 {
-	// test
+	if (-1 == _InputKey)
 	{
-		UMainGameInstance* Inst = GetGameInstance<UMainGameInstance>();
-		const FItemDataRow* ItemData = Inst->GetItemData(_ItemName);
-
-		int ItemReloadNum = ItemData->GetReloadNum();
-		int ItemDamage = ItemData->GetDamage();
-		UStaticMesh* ItemMeshRes = ItemData->GetResMesh();
-		FVector ItemRelLoc = ItemData->GetRelLoc();
-		FRotator ItemRelRot = ItemData->GetRelRot();
-		FVector ItemRelScale = ItemData->GetRelScale();
-
-		if (_ItemName == "SniperRifle")
-		{
-			ItemSlot[0].Name = _ItemName;
-			ItemSlot[0].ReloadMaxNum = ItemReloadNum;
-			ItemSlot[0].ReloadLeftNum = ItemReloadNum;
-			ItemSlot[0].Damage = ItemDamage;
-			ItemSlot[0].MeshRes = ItemMeshRes;
-			ItemSlot[0].RelLoc = ItemRelLoc;
-			ItemSlot[0].RelRot = ItemRelRot;
-			ItemSlot[0].RelScale = ItemRelScale;
-		}
-		else if (_ItemName == "Katana")
-		{
-			ItemSlot[1].Name = _ItemName;
-			ItemSlot[1].ReloadMaxNum = ItemReloadNum;
-			ItemSlot[1].ReloadLeftNum = ItemReloadNum;
-			ItemSlot[1].Damage = ItemDamage;
-			ItemSlot[1].MeshRes = ItemMeshRes;
-			ItemSlot[1].RelLoc = ItemRelLoc;
-			ItemSlot[1].RelRot = ItemRelRot;
-			ItemSlot[1].RelScale = ItemRelScale;
-		}
+		// ItemSocket의 visibility 끄기
+		SetItemSocketVisibility(false);
+		return;
 	}
 
-	//아이템 static mesh 세팅
-	ItemSocketMesh->SetStaticMesh(ItemSlot[0].MeshRes);
-	FPVItemSocketMesh->SetStaticMesh(ItemSlot[0].MeshRes);
+	UStaticMesh* ItemMeshRes = ItemSlot[_InputKey].MeshRes;
+	FVector ItemRelLoc = ItemSlot[_InputKey].RelLoc;
+	FRotator ItemRelRot = ItemSlot[_InputKey].RelRot;
+	FVector ItemRelScale = ItemSlot[_InputKey].RelScale;
 
-	// 아이템 메시 transform 세팅
-	ItemSocketMesh->SetRelativeLocation(ItemSlot[0].RelLoc);
-	FPVItemSocketMesh->SetRelativeLocation(ItemSlot[0].RelLoc);
+	// ItemSocket의 static mesh 세팅
+	SetItemSocketMesh(ItemMeshRes, ItemRelLoc, ItemRelRot, ItemRelScale);
 
-	ItemSocketMesh->SetRelativeRotation(ItemSlot[0].RelRot);
-	FPVItemSocketMesh->SetRelativeRotation(ItemSlot[0].RelRot);
+	// ItemSocket의 visibility 켜기
+	SetItemSocketVisibility(true);
+}
 
-	ItemSocketMesh->SetRelativeScale3D(ItemSlot[0].RelScale);
-	FPVItemSocketMesh->SetRelativeScale3D(ItemSlot[0].RelScale);
+void ATestFPVCharacter::SetItemSocketMesh_Implementation(UStaticMesh* _ItemMeshRes, FVector _ItemRelLoc, FRotator _ItemRelRot, FVector _ItemRelScale)
+{
+	// static mesh 세팅
+	ItemSocketMesh->SetStaticMesh(_ItemMeshRes);
+	FPVItemSocketMesh->SetStaticMesh(_ItemMeshRes);
 
-	// 아이템 메시 visibility 켜기
-	ItemSocketMesh->SetVisibility(true);
-	FPVItemSocketMesh->SetVisibility(true);
+	// transform 세팅
+	ItemSocketMesh->SetRelativeLocation(_ItemRelLoc);
+	FPVItemSocketMesh->SetRelativeLocation(_ItemRelLoc);
+
+	ItemSocketMesh->SetRelativeRotation(_ItemRelRot);
+	FPVItemSocketMesh->SetRelativeRotation(_ItemRelRot);
+
+	ItemSocketMesh->SetRelativeScale3D(_ItemRelScale);
+	FPVItemSocketMesh->SetRelativeScale3D(_ItemRelScale);
+}
+
+void ATestFPVCharacter::SetItemSocketVisibility_Implementation(bool _Visibility)
+{
+	ItemSocketMesh->SetVisibility(_Visibility);
+	FPVItemSocketMesh->SetVisibility(_Visibility);
 }
 
 //void ATestFPVCharacter::ChangePosture_Implementation(EPlayerPosture _Type)	// => 메인으로 이전해야 함 (24.07.30 수정 중)
@@ -696,6 +667,27 @@ void ATestFPVCharacter::ChangeLowerState_Implementation(EPlayerLowerState _Lower
 
 void ATestFPVCharacter::ChangePlayerDir_Implementation(EPlayerMoveDir _Dir) // => 매인 적용.
 {
+	if (IdleDefault == EPlayerUpperState::UArm_Idle)
+	{
+		switch (_Dir)
+		{
+		case EPlayerMoveDir::Forward:
+			ChangeMontage(EPlayerUpperState::MoveForward);
+			break;
+		case EPlayerMoveDir::Back:
+			ChangeMontage(EPlayerUpperState::MoveBack);
+			break;
+		case EPlayerMoveDir::Left:
+			ChangeMontage(EPlayerUpperState::MoveLeft);
+			break;
+		case EPlayerMoveDir::Right:
+			ChangeMontage(EPlayerUpperState::MoveRight);
+			break;
+		default:
+			break;
+		}
+	}
+
 	// W A S D
 	DirValue = _Dir;
 }
@@ -710,6 +702,11 @@ void ATestFPVCharacter::ChangeIsFaint_Implementation()
 	{
 		IsFaint = true;
 	}
+}
+
+bool ATestFPVCharacter::IsItemInItemSlot(int _Index)
+{
+	return ItemSlot[_Index].IsItemIn;
 }
 
 void ATestFPVCharacter::CheckItem()	// => 메인 수정 필요 (24.08.02 PickUpItem 인자 추가됨)
@@ -1029,7 +1026,7 @@ void ATestFPVCharacter::AttackCheck()
 
 void ATestFPVCharacter::AttackEndCheck()
 {
-	ChangeMontage(IdleDefault);
+	//ChangeMontage(IdleDefault);
 
 	//UAnimMontage* GetCurMontage = GetCurrentMontage();
 	//FName GetCurMontageName = GetCurMontage->GetFName();

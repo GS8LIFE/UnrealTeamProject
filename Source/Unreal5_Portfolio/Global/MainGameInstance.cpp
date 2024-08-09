@@ -5,8 +5,8 @@
 #include "Global/DataTable/PlayerDataRow.h"
 #include "Global/DataTable/NetDataRow.h"
 #include "Global/DataTable/MonsterDataRow.h"
+#include "Global/DataTable/BossMonsterDataRow.h"
 #include "Global/DataTable/ItemDataRow.h"
-#include "Global/DataTable/BossDataRow.h"
 #include "Global/DataTable/GlobalObjectRow.h"
 #include "Global/DataTable/MapObjDataRow.h"
 #include "Global/DataTable/QuestDataRow.h"
@@ -131,6 +131,24 @@ const FMonsterDataRow* UMainGameInstance::GetMonsterData(FName _Name)
 	return Data;
 }
 
+const FBossMonsterDataRow* UMainGameInstance::GetBossMonsterData(FName _Name)
+{
+	if (nullptr == BossMonsterDataTable)
+	{
+		UE_LOG(MonsterLog, Fatal, TEXT("%S(%u)> if (nullptr == MonsterDataTable)"), __FUNCTION__, __LINE__);
+	}
+
+	FBossMonsterDataRow* Data = BossMonsterDataTable->FindRow<FBossMonsterDataRow>(_Name, nullptr);
+
+	if (nullptr == Data)
+	{
+		UE_LOG(MonsterLog, Error, TEXT("%S(%u)> %s Name Data Is Nullptr"), __FUNCTION__, __LINE__, *_Name.ToString());
+		return nullptr;
+	}
+
+	return Data;
+}
+
 const FItemDataRow* UMainGameInstance::GetItemData(FName _Name)
 {
 	if (nullptr == ItemDataTable)
@@ -197,26 +215,6 @@ const FWidgetDataRow* UMainGameInstance::GetLobbyUserWidgetDataTable(FName _Name
 	if (nullptr == Data)
 	{
 		UE_LOG(UILog, Error, TEXT("%S(%u)> %s Name Data Is Nullptr"), __FUNCTION__, __LINE__, *_Name.ToString());
-		return nullptr;
-	}
-
-	return Data;
-}
-
-
-
-const FBossDataRow* UMainGameInstance::GetBossDataTable(FName _Name)
-{
-	if (nullptr == BossDataTable)
-	{
-		UE_LOG(MonsterLog, Fatal, TEXT("%S(%u)> if (nullptr == BossDataTable)"), __FUNCTION__, __LINE__);
-	}
-
-	FBossDataRow* Data = BossDataTable->FindRow<FBossDataRow>(_Name, nullptr);
-
-	if (nullptr == Data)
-	{
-		UE_LOG(MonsterLog, Error, TEXT("%S(%u)> %s Name Data Is Nullptr"), __FUNCTION__, __LINE__, *_Name.ToString());
 		return nullptr;
 	}
 

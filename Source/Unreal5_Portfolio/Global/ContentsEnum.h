@@ -32,32 +32,33 @@ enum class EPlayerState : uint8
 UENUM(BlueprintType)
 enum class EGameStage : uint8
 {
-	Init					UMETA(DisplayName = "게임 플레이 시작 초기"),
-	VisitArmory				UMETA(DisplayName = "무기고 방문"),
-	ObtainFirstSample		UMETA(DisplayName = "샘플1 아이템 확보"),
-	ObtainSecondSample		UMETA(DisplayName = "샘플2 아이템 확보"),
-	ObtainThirdSample		UMETA(DisplayName = "샘플3 아이템 확보"),
-	PlantingBomb			UMETA(DisplayName = "폭탄 설치"),
-	MoveToGatheringPoint	UMETA(DisplayName = "집결지로 이동"),
-	Defensing				UMETA(DisplayName = "거점 방어"),
-	MissionClear			UMETA(DisplayName = "미션 성공")
+	Init,					// 게임 플레이 시작 초기
+	VisitArmory,			// 무기고 방문
+	ObtainFirstSample,		// 샘플1 아이템 확보
+	ObtainSecondSample,		// 샘플2 아이템 확보
+	ObtainThirdSample,		// 샘플3 아이템 확보
+	PlantingBomb,			// 폭탄 설치
+	MoveToGatheringPoint,	// 집결지로 이동
+	Defensing,				// 거점 방어
+	MissionClear,			// 미션 성공
+	Max
 };
 
 
-/// <summary>
-/// 1, 2, 3, 4 번에 대한 플레이어 자세.
-/// </summary>
-UENUM(BlueprintType)
-enum class EPlayerPosture : uint8
-{
-	Rifle1,			// 주 무기 1		// 해당 무기공격 자세 있음
-	Rifle2,			// 주 무기 2		// 해당 무기공격 자세 있음
-	Melee,			// 근거리 무기	// 해당 무기공격 자세 있음
-	Drink,			// 음료(힐팩)	// 인벤토리에만 존재
-	Bomb,			// 설치형 폭탄	// 인벤토리에만 존재
-	Barehand,		// 맨손			// 해당 무기공격 자세 있음
-	SlotMax
-};
+///// <summary>
+///// 1, 2, 3, 4 번에 대한 플레이어 자세.
+///// </summary>
+//UENUM(BlueprintType)
+//enum class EPlayerPosture : uint8
+//{
+//	Rifle1,			// 주 무기 1		// 해당 무기공격 자세 있음
+//	Rifle2,			// 주 무기 2		// 해당 무기공격 자세 있음
+//	Melee,			// 근거리 무기	// 해당 무기공격 자세 있음
+//	Drink,			// 음료(힐팩)	// 인벤토리에만 존재
+//	Bomb,			// 설치형 폭탄	// 인벤토리에만 존재
+//	Barehand,		// 맨손			// 해당 무기공격 자세 있음
+//	SlotMax
+//};
 
 UENUM(BlueprintType)
 enum class EItemType : uint8
@@ -67,6 +68,14 @@ enum class EItemType : uint8
 	Drink,
 	Bomb,
 	None
+};
+
+UENUM(BlueprintType)
+enum class ECameraShakeState : uint8
+{
+	Shoot,
+	Turnback,
+	Stop
 };
 
 UENUM(BlueprintType)
@@ -155,6 +164,7 @@ UENUM(BlueprintType)
 enum class EBossMonsterState : uint8
 {
 	Idle,
+	Walk,
 	Chase,
 	MeleeAttack,
 	RangedAttack,
@@ -164,12 +174,12 @@ enum class EBossMonsterState : uint8
 UENUM(BlueprintType)
 enum class EBossMonsterAnim : uint8
 {
-	Idle	UMETA(DisplayName = "Idle"),
-	WalK	UMETA(DisplayName = "Walk"),
-	Run	UMETA(DisplayName = "Run"),
-	MeleeAttack	UMETA(DisplayName = "MeleeAttack"),
-	RangedAttack	UMETA(DisplayName = "RangedAttack"),
-	Dead	UMETA(DisplayName = "Dead")
+	Idle				UMETA(DisplayName = "Idle"),
+	WalK				UMETA(DisplayName = "Walk"),
+	Run					UMETA(DisplayName = "Run"),
+	MeleeAttack			UMETA(DisplayName = "MeleeAttack"),
+	RangedAttack		UMETA(DisplayName = "RangedAttack"),
+	Dead				UMETA(DisplayName = "Dead")
 };
 
 UENUM(BlueprintType)
@@ -187,6 +197,7 @@ enum class EUserWidgetType : uint8
 	E_Key,
 	Num5_Key,
 	Quest,
+	Timer,
 	SlotEmpty,
 	NotAreaComment,
 	AnyInteractionComment,
@@ -235,6 +246,11 @@ enum class EPlayerUpperState : uint8
 	
 	Drink,
 	Bomb,
+
+	MoveForward,
+	MoveBack,
+	MoveLeft,
+	MoveRight,
 };
 
 UENUM(BlueprintType)

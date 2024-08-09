@@ -4,8 +4,6 @@
 #include "MainGameLevel/Monster/Base/BasicMonsterBase.h"
 #include "MainGameLevel/Monster/Animation/MonsterRandomAnimInstance.h"
 #include "MainGameLevel/Monster/BasicMonster/AI/BasicMonsterAIController.h"
-#include "MainGameLevel/Player/MainPlayerState.h"
-#include "MainGameLevel/Player/MainCharacter.h"
 
 #include "GameFrameWork/CharacterMovementComponent.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
@@ -21,7 +19,7 @@
 #include "Global/MainGameState.h"
 #include "Global/ContentsLog.h"
 
-#include "TestLevel/Character/TestCharacter.h"
+#include "PartDevLevel/Character/ParentsCharacter.h"
 #include "TestLevel/Character/TestPlayerState.h"
 
 ABasicMonsterBase::ABasicMonsterBase()
@@ -115,13 +113,7 @@ void ABasicMonsterBase::Tick(float DeltaTime)
 
 void ABasicMonsterBase::OnAttackOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	UBlackboardComponent* BlackBoard = UAIBlueprintHelperLibrary::GetBlackboard(this);
-	if (nullptr == BlackBoard)
-	{
-		return;
-	}
-
-	ATestCharacter* HitCharacter = Cast<ATestCharacter>(OtherActor);
+	AParentsCharacter* HitCharacter = Cast<AParentsCharacter>(OtherActor);
 	if (nullptr != HitCharacter)
 	{
 		ATestPlayerState* HitPlayerState = Cast<ATestPlayerState>(HitCharacter->GetPlayerState());
@@ -133,25 +125,6 @@ void ABasicMonsterBase::OnAttackOverlapEnd(UPrimitiveComponent* OverlappedComp, 
 		
 		HitPlayerState->AddDamage(SettingData->AttackDamage);
 	}
-
-	//UBlackboardComponent* BlackBoard = UAIBlueprintHelperLibrary::GetBlackboard(this);
-	//if (nullptr == BlackBoard)
-	//{
-	//	return;
-	//}
-	//
-	//EBasicMonsterState MonsterState = static_cast<EBasicMonsterState>(BlackBoard->GetValueAsEnum(TEXT("CurState")));
-	//AMainCharacter* HitCharacter = Cast<AMainCharacter>(OtherActor);
-	//if (nullptr != HitCharacter && EBasicMonsterState::Attack == MonsterState)
-	//{
-	//	AMainPlayerState* HitPlayerState = Cast<AMainPlayerState>(HitCharacter->GetPlayerState());
-	//	if (nullptr == HitPlayerState)
-	//	{
-	//		LOG(MonsterLog, Fatal, TEXT("HitPlayerState Is Not Valid"));
-	//	}
-	//
-	//	HitPlayerState->AddDamage(SettingData->AttackDamage);
-	//}
 }
 
 void ABasicMonsterBase::ChangeRandomAnimation(uint8 Type)
@@ -162,17 +135,14 @@ void ABasicMonsterBase::ChangeRandomAnimation(uint8 Type)
 
 void ABasicMonsterBase::Damaged(float Damage)
 {
+	Super::Damaged(Damage);
+
 	// Server Only
-	if (false == HasAuthority())
+	if (false == HasAuthority() || 0.0f >= SettingData->Hp)
 	{
 		return;
 	}
-
-	if (0.0f >= SettingData->Hp)
-	{
-		return;
-	}
-
+	
 	SettingData->Hp -= Damage;
 
 	// Dead

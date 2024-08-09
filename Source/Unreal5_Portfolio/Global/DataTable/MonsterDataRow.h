@@ -19,28 +19,18 @@ struct FMonsterDataRow : public FTableRowBase
 	
 public:
 	// 걷기 속도
-	UPROPERTY(EditAnywhere, meta = (AllowprivateAccess = "true"))
+	UPROPERTY(EditAnywhere)
 	float WalkSpeed = 300.0f;
 
 	// 달리기 속도
-	UPROPERTY(EditAnywhere, meta = (AllowprivateAccess = "true"))
+	UPROPERTY(EditAnywhere)
 	float RunSpeed = 600.0f;
 
 	// 공격 범위
-	UPROPERTY(EditAnywhere, meta = (AllowprivateAccess = "true"))
+	UPROPERTY(EditAnywhere)
 	float AttackRange = 200.0f;
 
 	// 몽타주
-	UPROPERTY(EditAnywhere, meta = (AllowprivateAccess = "true"))
+	UPROPERTY(EditAnywhere)
 	TMap<EBasicMonsterAnim, FAnimMontageGroup> AllAnimMontages;
-	
-	// Test
-	// 몬스터 타입
-	UPROPERTY(EditAnywhere, meta = (AllowprivateAccess = "true"))
-	ETestMonsterType MonsterType = ETestMonsterType::Noraml;
-
-	// 몽타주
-	UPROPERTY(EditAnywhere, meta = (AllowprivateAccess = "true"))
-	TMap<ETestMonsterAnim, FAnimMontageGroup> TestAnimMontages;
-
 };
