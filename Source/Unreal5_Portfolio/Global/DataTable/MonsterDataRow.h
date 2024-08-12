@@ -18,6 +18,10 @@ struct FMonsterDataRow : public FTableRowBase
 	GENERATED_BODY()
 	
 public:
+	// 몬스터 최대 체력
+	UPROPERTY(EditAnywhere)
+	float MaxHp = 0.0f;
+
 	// 걷기 속도
 	UPROPERTY(EditAnywhere)
 	float WalkSpeed = 300.0f;
@@ -25,6 +29,10 @@ public:
 	// 달리기 속도
 	UPROPERTY(EditAnywhere)
 	float RunSpeed = 600.0f;
+
+	// 공격력
+	UPROPERTY(EditAnywhere)
+	float AttackDamage = 0.0f;
 
 	// 공격 범위
 	UPROPERTY(EditAnywhere)

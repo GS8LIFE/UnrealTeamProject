@@ -37,6 +37,7 @@
 #include <Kismet/GameplayStatics.h>
 
 #include "TimerManager.h"
+#include "Components/ArrowComponent.h"
 
 // Sets default values
 ATestCharacter::ATestCharacter()
@@ -118,6 +119,12 @@ ATestCharacter::ATestCharacter()
 	HeadNameComponent->SetupAttachment(RootComponent);
 	HeadNameComponent->SetOwnerNoSee(true);
 	HeadNameComponent->bHiddenInSceneCapture = true;
+
+	MuzzlePos = CreateDefaultSubobject<UArrowComponent>(TEXT("Muzzle Position"));
+	MuzzlePos->SetupAttachment(ItemSocketMesh);
+
+	FPVMuzzlePos = CreateDefaultSubobject<UArrowComponent>(TEXT("FPV Muzzle Position"));
+	FPVMuzzlePos->SetupAttachment(FPVItemSocketMesh);
 
 	// Inventory
 	for (size_t i = 0; i < 4; i++)
@@ -207,7 +214,7 @@ void ATestCharacter::BeginPlay()
 			{
 				UMainGameInstance* Init = UMainGameBlueprintFunctionLibrary::GetMainGameInstance(GetWorld());
 				GetSetSelectCharacter(Init->GetUIToSelectCharacter());
-			}, 2.0f, false);
+			}, 5.0f, false);
 	}
 }
 
@@ -229,7 +236,7 @@ void ATestCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 
 void ATestCharacter::AnimationEnd(FString _CurMontage)
 {
-	if ("E_Drinking_Montage" == _CurMontage)
+	if ("E_Drinking_Montage" == _CurMontage || "A_Drinking_Montage" == _CurMontage)
 	{
 		PlayerHp_Heal();
 	}
@@ -399,19 +406,23 @@ void ATestCharacter::ClientMeshChange_Implementation(FName _CharacterType)
 	}
 
 	// 스켈레탈 메쉬 선택
-	//USkeletalMesh* PlayerSkeletalMesh = MainGameInst->GetPlayerData(FName("TestPlayer"))->GetPlayerSkeletalMesh();
 	USkeletalMesh* PlayerSkeletalMesh = Inst->GetPlayerData(_CharacterType)->GetPlayerSkeletalMesh();
 	GetMesh()->SetSkeletalMesh(PlayerSkeletalMesh);
-
-
-	//USkeletalMesh* FPVSkeletalMesh = MainGameInst->GetPlayerData(FName("TestPlayer"))->GetPlayerFPVPlayerSkeletalMesh();
 	USkeletalMesh* FPVSkeletalMesh = Inst->GetPlayerData(_CharacterType)->GetPlayerFPVPlayerSkeletalMesh();
 	FPVMesh->SetSkeletalMesh(FPVSkeletalMesh);
 
 	// ABP 선택
-	//UClass* AnimInst = Cast<UClass>(MainGameInst->GetPlayerData(FName("TestPlayer"))->GetPlayerAnimInstance());
 	UClass* AnimInst = Cast<UClass>(Inst->GetPlayerData(_CharacterType)->GetPlayerAnimInstance());
 	GetMesh()->SetAnimInstanceClass(AnimInst);
+	FPVMesh->SetAnimInstanceClass(AnimInst);
+
+	PlayerAnimInst = Cast<UPlayerAnimInstance>(GetMesh()->GetAnimInstance());
+	FPVPlayerAnimInst = Cast<UPlayerAnimInstance>(FPVMesh->GetAnimInstance());
+
+	// AnimMontage 선택
+	TMap<EPlayerUpperState, class UAnimMontage*> AnimMon = Inst->GetPlayerData(_CharacterType)->GetAnimMontages();
+	PlayerAnimInst->SetAnimMontages(AnimMon);
+	FPVPlayerAnimInst->SetAnimMontages(AnimMon);
 }
 
 void ATestCharacter::PickUpItem(AItemBase* _Item)
@@ -440,8 +451,16 @@ void ATestCharacter::PickUpItem(AItemBase* _Item)
 	ItemSlot[ItemSlotIndex].ReloadLeftNum = ItemData->GetReloadNum();		// 무기 장전 단위	 (Left) (-1일 경우 총기류 무기가 아님)
 	ItemSlot[ItemSlotIndex].Damage = ItemData->GetDamage();					// 무기 공격력 (0일 경우 무기가 아님)
 	ItemSlot[ItemSlotIndex].MeshRes = ItemData->GetResMesh();				// 스태틱 메시 리소스
-	ItemSlot[ItemSlotIndex].RelLoc = ItemData->GetRelLoc();					// ItemSocket, FPVItemSocket 상대적 위치
-	ItemSlot[ItemSlotIndex].RelRot = ItemData->GetRelRot();					// ItemSocket, FPVItemSocket 상대적 회전
+	if (FName("TestPlayer") == UIToSelectCharacter || FName("Vanguard") == UIToSelectCharacter)
+	{
+		ItemSlot[ItemSlotIndex].RelLoc = ItemData->GetRelLoc_E();			// ItemSocket, FPVItemSocket 상대적 위치
+		ItemSlot[ItemSlotIndex].RelRot = ItemData->GetRelRot_E();			// ItemSocket, FPVItemSocket 상대적 회전
+	}
+	else if (FName("AlienSoldier") == UIToSelectCharacter || FName("Crypto") == UIToSelectCharacter)
+	{
+		ItemSlot[ItemSlotIndex].RelLoc = ItemData->GetRelLoc_A();			// ItemSocket, FPVItemSocket 상대적 위치
+		ItemSlot[ItemSlotIndex].RelRot = ItemData->GetRelRot_A();			// ItemSocket, FPVItemSocket 상대적 회전
+	}
 	ItemSlot[ItemSlotIndex].RelScale = ItemData->GetRelScale();				// ItemSocket, FPVItemSocket 상대적 크기
 
 	// 필드에 존재하는 아이템 액터 삭제
@@ -464,11 +483,11 @@ void ATestCharacter::PickUpItem(AItemBase* _Item)
 	}
 
 	// To Controller -> To Widget
-	//ATestPlayerController* Con = Cast<ATestPlayerController>(GetController());
-	//if (nullptr != Con)
-	//{
-	//	Con->FGetItemToWidget.Execute();
-	//}
+	ATestPlayerController* Con = Cast<ATestPlayerController>(GetController());
+	if (nullptr != Con)
+	{
+		Con->FGetItemToWidget.Execute();
+	}
 }
 
 void ATestCharacter::DropItem(int _SlotIndex)
@@ -516,7 +535,7 @@ void ATestCharacter::FireRayCast_Implementation()
 	ATestPlayerController* Con = Cast<ATestPlayerController>(GetController());
 	FVector Start = GetMesh()->GetSocketLocation(FName("MuzzleSocket"));
 	//Start.Z -= 20.0f;
-	FVector End = (Con->GetControlRotation().Vector() * 2000.0f) + Start;
+	FVector End = (Con->GetControlRotation().Vector() * 4000.0f) + Start;
 
 	FHitResult Hit;
 	if (GetWorld())
@@ -866,6 +885,7 @@ void ATestCharacter::BombSetStart()
 	// 폭탄 설치 가능.
 	IsBombSetting = true;
 	AreaObject->ResetBombTime();
+	SetItemSocketVisibility(false);
 	ChangeMontage(EPlayerUpperState::Bomb);
 }
 
@@ -903,6 +923,7 @@ void ATestCharacter::BombSetCancel()
 		}
 
 		// 이전 자세로 애니메이션 변경
+		SetItemSocketVisibility(true);
 		ChangeMontage(IdleDefault);
 	}
 }
@@ -925,6 +946,7 @@ void ATestCharacter::BombSetEnd()
 		DeleteItemInfo(static_cast<int>(EItemType::Bomb));
 
 		// 이전 자세로 애니메이션 변경
+		SetItemSocketVisibility(true);
 		ChangeMontage(IdleDefault);
 	}
 }
@@ -976,22 +998,26 @@ void ATestCharacter::GetSetSelectCharacter_Implementation(FName _CharacterType)
 	}
 
 	// 스켈레탈 메쉬 선택
-	//USkeletalMesh* PlayerSkeletalMesh = MainGameInst->GetPlayerData(FName("TestPlayer"))->GetPlayerSkeletalMesh();
 	USkeletalMesh* PlayerSkeletalMesh = Inst->GetPlayerData(UIToSelectCharacter)->GetPlayerSkeletalMesh();
 	GetMesh()->SetSkeletalMesh(PlayerSkeletalMesh);
-
-
-	//USkeletalMesh* FPVSkeletalMesh = MainGameInst->GetPlayerData(FName("TestPlayer"))->GetPlayerFPVPlayerSkeletalMesh();
 	USkeletalMesh* FPVSkeletalMesh = Inst->GetPlayerData(UIToSelectCharacter)->GetPlayerFPVPlayerSkeletalMesh();
 	FPVMesh->SetSkeletalMesh(FPVSkeletalMesh);
 
 	// ABP 선택
-	//UClass* AnimInst = Cast<UClass>(MainGameInst->GetPlayerData(FName("TestPlayer"))->GetPlayerAnimInstance());
 	UClass* AnimInst = Cast<UClass>(Inst->GetPlayerData(UIToSelectCharacter)->GetPlayerAnimInstance());
 	GetMesh()->SetAnimInstanceClass(AnimInst);
+	FPVMesh->SetAnimInstanceClass(AnimInst);
+
+	PlayerAnimInst = Cast<UPlayerAnimInstance>(GetMesh()->GetAnimInstance());
+	FPVPlayerAnimInst = Cast<UPlayerAnimInstance>(FPVMesh->GetAnimInstance());
+
+	// AnimMontage 선택
+	TMap<EPlayerUpperState, class UAnimMontage*> AnimMon = Inst->GetPlayerData(UIToSelectCharacter)->GetAnimMontages();
+	PlayerAnimInst->SetAnimMontages(AnimMon);
+	FPVPlayerAnimInst->SetAnimMontages(AnimMon);
+
 
 	ClientMeshChange(UIToSelectCharacter);
-
 }
 
 void ATestCharacter::DeleteItemInfo(int _Index)
@@ -1035,6 +1061,11 @@ void ATestCharacter::BulletCalculation()
 
 bool ATestCharacter::IsItemInItemSlot(int _Index)
 {
+	if (_Index == -1)
+	{
+		return false;
+	}
+
 	return ItemSlot[_Index].IsItemIn;
 }
 

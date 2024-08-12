@@ -40,6 +40,7 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	// AnimInstance
+	
 public:
 	// 하체 정보 (Controller 에서 호출함. -> 나중에 수정 필요.)
 	UPROPERTY(Category = "Contents", Replicated, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
@@ -63,6 +64,19 @@ public:
 	// 인벤토리에 아이템이 있는지 여부.
 	UFUNCTION(BlueprintCallable)
 	bool IsItemInItemSlot(int _Index);
+
+
+	UPROPERTY(Category = "Contents", EditAnywhere, BlueprintReadWrite)
+	class UParticleSystem* MuzzleEffect = nullptr;
+	UPROPERTY(Category = "Widget", EditAnywhere, BlueprintReadWrite)
+	class UArrowComponent* MuzzlePos = nullptr;
+	UPROPERTY(Category = "Widget", EditAnywhere, BlueprintReadWrite)
+	class UArrowComponent* FPVMuzzlePos = nullptr;
+
+	FORCEINLINE EPlayerFPSTPSState GetPointOfView()
+	{
+		return PointOfView;
+	}
 
 private: // 문제 발생 여지 있음 발생하면 그냥 지워야 함.
 	// == Components ==

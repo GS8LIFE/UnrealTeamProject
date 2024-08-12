@@ -28,7 +28,6 @@ ABasicMonsterBase::ABasicMonsterBase()
 
 	// Attack Component
 	AttackComponent = CreateDefaultSubobject<USphereComponent>(TEXT("Attack Component"));
-	AttackComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	AttackComponent->SetupAttachment(RootComponent);
 
 	// Dissolve
@@ -70,6 +69,10 @@ void ABasicMonsterBase::BeginPlay()
 		return;
 	}
 
+	SettingData->OriginPos = GetActorLocation();
+	SettingData->Hp = BaseData->MaxHp;
+	SettingData->BaseData = BaseData;
+
 	// 애니메이션 세팅
 	AnimInst = Cast<UMonsterRandomAnimInstance>(GetMesh()->GetAnimInstance());
 	if (nullptr == AnimInst)
@@ -82,6 +85,10 @@ void ABasicMonsterBase::BeginPlay()
 	{
 		AnimInst->PushAnimation(AnimMontageGroup.Key, AnimMontageGroup.Value);
 	}	
+
+	// Binding
+	AttackComponent->OnComponentEndOverlap.AddDynamic(this, &ABasicMonsterBase::OnAttackOverlapEnd);
+	AttackComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	// 서버 체크
 	if (false == HasAuthority())
@@ -98,9 +105,6 @@ void ABasicMonsterBase::BeginPlay()
 	}
 
 	AIController->GetBlackboardComponent()->SetValueAsObject(TEXT("MonsterData"), SettingData);
-	
-	// Binding
-	AttackComponent->OnComponentEndOverlap.AddDynamic(this, &ABasicMonsterBase::OnAttackOverlapEnd);
 }
 
 void ABasicMonsterBase::Tick(float DeltaTime)
@@ -119,11 +123,13 @@ void ABasicMonsterBase::OnAttackOverlapEnd(UPrimitiveComponent* OverlappedComp, 
 		ATestPlayerState* HitPlayerState = Cast<ATestPlayerState>(HitCharacter->GetPlayerState());
 		if (nullptr == HitPlayerState)
 		{
-			LOG(MonsterLog, Fatal, TEXT("HitPlayerState Is Not Valid"));
 			return;
 		}
 		
-		HitPlayerState->AddDamage(SettingData->AttackDamage);
+		if (true == HasAuthority())
+		{
+			HitPlayerState->AddDamage(SettingData->BaseData->AttackDamage);
+		}
 	}
 }
 

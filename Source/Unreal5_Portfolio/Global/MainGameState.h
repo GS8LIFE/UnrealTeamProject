@@ -69,6 +69,8 @@ public:
 	void GameStateCheck(AActor* _OtherActor);
 	void GameStateCheck_Implementation(AActor* _OtherActor);
 
+	void SetIsPlayCinematic(bool _Value);
+
 	UFUNCTION()
 	FORCEINLINE int GetPlayerCount()
 	{
@@ -105,6 +107,11 @@ public:
 		IsStageChange = _Value;
 	}
 
+	FORCEINLINE bool IsPlayCinematic() const
+	{
+		return bPlayCinematic;
+	}
+
 	void PlayBackgroundSound();
 
 	void StopBackgroundSound();
@@ -136,6 +143,12 @@ private:
 	bool IsStageChange = false;
 
 	/// <summary>
+	/// 시네마틱 재생 여부에 대한 변수
+	/// </summary>
+	UPROPERTY()
+	bool bPlayCinematic = false;
+
+	/// <summary>
 	/// 플레이어 수
 	/// </summary>
 	UPROPERTY()
@@ -156,9 +169,9 @@ private:
 	/// <summary>
 	/// EndingTriggerBox의 위치, 회전값 변수
 	/// </summary>
-	FVector EndingTriggerBoxPos = FVector(-8500.0f, 87200.0f, -7030.0f);
-	FRotator EndingTriggerBoxRot = FRotator(0.0f, 0.0f, 60.0f);
-	FVector TriggerBoxColScale = FVector(10.0f, 10.0f, 10.0f);
+	FVector EndingTriggerBoxPos = FVector(-8500.0f, 87200.0f, -7930.0f);
+	FRotator EndingTriggerBoxRot = FRotator(0.0f, 0.0f, 0.0f);
+	FVector TriggerBoxColScale = FVector(10.0f, 10.0f, 18.0f);
 
 	/// <summary>
 	/// 배경음악 컴포넌트
