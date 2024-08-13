@@ -2,6 +2,8 @@
 
 
 #include "PartDevLevel/UI/HUD/Timer_UserWidget.h"
+#include "Components/TextBlock.h"
+#include "Kismet/KismetTextLibrary.h"
 
 void UTimer_UserWidget::SetTimerCurStage(EGameStage _SetStage)
 {
@@ -11,12 +13,10 @@ void UTimer_UserWidget::SetTimerCurStage(EGameStage _SetStage)
 
 void UTimer_UserWidget::SetTimer(int _Hour, int _Min, int _Second)
 {
-	/*
-	if (0 == _Second) {
-		SetTimer(_Hour, _Min);
+	if (0 == _Hour) {
+		SetTimer(_Min, _Second);
 		return;
 	}
-	*/
 
 	NowTimeSpan = FTimespan(_Hour,_Min,_Second);
 	FText TextTemplate = FText::FromString("{_Hour}:{_Min}:{_Second}");
@@ -26,17 +26,19 @@ void UTimer_UserWidget::SetTimer(int _Hour, int _Min, int _Second)
 	Arguments.Add(TEXT("_Min"), FText::AsNumber(_Min));
 	Arguments.Add(TEXT("_Second"), FText::AsNumber(_Second));
 
-	T_Time = FText::Format(TextTemplate, Arguments);
+	Time = FText::Format(TextTemplate, Arguments);
+	TimeTextBlock->SetText(Time);
 }
 
 void UTimer_UserWidget::SetTimer(int _Min, int _Second)
 {
 	NowTimeSpan = FTimespan(0,_Min,_Second);
 	FText TextTemplate = FText::FromString("{_Min}:{_Second}");
-
+	;
 	FFormatNamedArguments Arguments;
-	Arguments.Add(TEXT("_Min"), FText::AsNumber(_Min));
-	Arguments.Add(TEXT("_Second"), FText::AsNumber(_Second));
+	Arguments.Add(TEXT("_Min"), UKismetTextLibrary::Conv_IntToText(NowTimeSpan.GetMinutes(), false, true, 2, 324));
+	Arguments.Add(TEXT("_Second"), UKismetTextLibrary::Conv_IntToText(NowTimeSpan.GetSeconds(), false, true, 2, 324));
 
-	T_Time = FText::Format(TextTemplate, Arguments);
+	Time = FText::Format(TextTemplate, Arguments);
+	TimeTextBlock->SetText(Time);
 }

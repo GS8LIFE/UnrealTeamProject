@@ -7,6 +7,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Timer_UserWidget.generated.h"
 
+
 /**
  * 
  */
@@ -18,10 +19,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetTimerCurStage(EGameStage _SetStage);
 	UFUNCTION(BlueprintCallable)
-	void SetTimer(int _Min, int _Second);
 	void SetTimer(int _Hour,int _Min,int _Second);
-
-
-	FText T_Time;
+	void SetTimer(int _Min, int _Second);
+protected:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (BindWidget))
+	class UTextBlock* TimeTextBlock;
+private:
+	FText Time;
 	FTimespan NowTimeSpan;
 };
