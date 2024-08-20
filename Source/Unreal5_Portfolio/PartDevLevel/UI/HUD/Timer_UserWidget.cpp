@@ -42,3 +42,10 @@ void UTimer_UserWidget::SetTimer(int _Min, int _Second)
 	Time = FText::Format(TextTemplate, Arguments);
 	TimeTextBlock->SetText(Time);
 }
+
+void UTimer_UserWidget::StartTimer(bool _Foward)
+{
+	b_Foward = _Foward;
+
+
+}
